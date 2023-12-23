@@ -20,7 +20,7 @@ enum Direction {
 }
 
 fn random_position(window_size: &terminal::WindowSize) -> Position {
-    let mut rng = rand::thread_rng();
+    let mut rng: rand::rngs::ThreadRng = rand::thread_rng();
     return Position {
         x: rng.gen_range(0..window_size.columns),
         y: rng.gen_range(0..window_size.rows),
@@ -39,10 +39,10 @@ fn move_wrap(position: &mut Position, window_size: &terminal::WindowSize, (x, y)
 // }
 
 fn main() -> io::Result<()> {
-    let mut window_size = terminal::window_size()?;
+    let mut window_size: terminal::WindowSize = terminal::window_size()?;
     let mut args = std::env::args()
         .skip(1)
-        .map(|arg| arg.parse().expect("Failed to parse integer argument"));
+        .map(|arg: String| arg.parse().expect("Failed to parse integer argument"));
     match [args.next(), args.next()] {
         [None, None] => (),
         [Some(x), Some(y)] => {
@@ -57,9 +57,9 @@ fn main() -> io::Result<()> {
     }
     assert!(args.next() == None, "Too many arguments");
     window_size.columns /= 2;
-    let window_size = window_size;
+    let window_size: terminal::WindowSize = window_size;
 
-    let mut apple = random_position(&window_size);
+    let mut apple: Position = random_position(&window_size);
     let mut body: VecDeque<Position> = VecDeque::from_iter([random_position(&window_size)]);
     let mut direction: Direction = Direction::None;
     let mut score: u32 = 0;
@@ -148,7 +148,7 @@ fn main() -> io::Result<()> {
         }
     }
 
-    let text = format!("Score: {}", score);
+    let text: String = format!("Score: {}", score);
     queue!(
         stdout,
         cursor::MoveTo(
