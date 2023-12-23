@@ -7,8 +7,8 @@ use std::time::{Duration, Instant};
 
 #[derive(Clone, Copy, PartialEq)]
 struct Position {
-	x: u16,
-	y: u16,
+	x: i32,
+	y: i32,
 }
 
 enum Direction {
@@ -22,14 +22,14 @@ enum Direction {
 fn random_position(window_size: &terminal::WindowSize) -> Position {
 	let mut rng: rand::rngs::ThreadRng = rand::thread_rng();
 	return Position {
-		x: rng.gen_range(0..window_size.columns),
-		y: rng.gen_range(0..window_size.rows),
+		x: rng.gen_range(0..window_size.columns as i32),
+		y: rng.gen_range(0..window_size.rows as i32),
 	};
 }
 
-fn move_wrap(position: &mut Position, window_size: &terminal::WindowSize, (x, y): (i16, i16)) {
-	position.x = ((position.x as i16 + x + window_size.columns as i16) % window_size.columns as i16) as u16;
-	position.y = ((position.y as i16 + y + window_size.rows as i16) % window_size.rows as i16) as u16;
+fn move_wrap(position: &mut Position, window_size: &terminal::WindowSize, (x, y): (i32, i32)) {
+	position.x = (position.x + x + window_size.columns as i32) % (window_size.columns as i32);
+	position.y = (position.y + y + window_size.rows as i32) % (window_size.rows as i32);
 }
 
 // fn wrap(position: &mut Position, window_size: &terminal::WindowSize) {
@@ -46,7 +46,7 @@ fn main() -> io::Result<()> {
 			rows: y,
 			height: x,
 			width: y,
-		}
+		},
 		_ => panic!("Missing second argument"),
 	}
 	assert!(args.next() == None, "Too many arguments");
@@ -89,10 +89,10 @@ fn main() -> io::Result<()> {
 			if head == part {
 				break 'game;
 			}
-			queue!(stdout, cursor::MoveTo(part.x * 2, part.y), style::SetBackgroundColor(style::Color::Green), style::Print("  "), style::ResetColor)?;
+			queue!(stdout, cursor::MoveTo((part.x * 2) as u16, part.y as u16), style::SetBackgroundColor(style::Color::Green), style::Print("  "), style::ResetColor)?;
 		}
 		body.push_front(head);
-		queue!(stdout, cursor::MoveTo(head.x * 2, head.y), style::SetBackgroundColor(style::Color::Blue), style::Print("  "), style::ResetColor, cursor::MoveTo(apple.x * 2, apple.y), style::SetBackgroundColor(style::Color::Red), style::Print("  "), style::ResetColor)?;
+		queue!(stdout, cursor::MoveTo((head.x * 2) as u16, head.y as u16), style::SetBackgroundColor(style::Color::Blue), style::Print("  "), style::ResetColor, cursor::MoveTo((apple.x * 2) as u16, apple.y as u16), style::SetBackgroundColor(style::Color::Red), style::Print("  "), style::ResetColor)?;
 		stdout.flush()?;
 
 		if event::poll(Duration::from_millis(100))? {
@@ -127,7 +127,7 @@ fn main() -> io::Result<()> {
 	}
 
 	let text: String = format!("Score: {}", score);
-	queue!(stdout, cursor::MoveTo(window_size.columns.checked_sub((text.len() / 2) as u16).unwrap_or(0), window_size.rows / 2), style::Print(text))?;
+	queue!(stdout, cursor::MoveTo(window_size.columns.checked_sub((text.len() / 2) as u16).unwrap_or(0), (window_size.rows / 2) as u16), style::Print(text))?;
 	stdout.flush()?;
 	let start = Instant::now();
 	loop {
