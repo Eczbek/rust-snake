@@ -3,7 +3,8 @@ use event::{Event, KeyCode, KeyEvent, KeyEventKind};
 use rand::Rng;
 use std::collections::VecDeque;
 use std::io::{self, stdout, Stdout, Write};
-use std::time::{Duration, Instant};
+use std::thread;
+use std::time::Duration;
 
 #[derive(Clone, Copy, PartialEq)]
 struct Position {
@@ -46,7 +47,7 @@ fn main() -> io::Result<()> {
 			rows: y,
 			height: x,
 			width: y,
-		}
+		},
 		_ => panic!("Missing second argument"),
 	}
 	assert!(args.next() == None, "Too many arguments");
@@ -129,14 +130,7 @@ fn main() -> io::Result<()> {
 	let text: String = format!("Score: {}", score);
 	queue!(stdout, cursor::MoveTo(window_size.columns.checked_sub((text.len() / 2) as u16).unwrap_or(0), window_size.rows / 2), style::Print(text))?;
 	stdout.flush()?;
-	let start = Instant::now();
-	loop {
-		event::read()?;
-		if start.elapsed() > Duration::from_secs(1) {
-			break;
-		}
-	}
-
+	thread::sleep(Duration::from_secs(1));
 	terminal::disable_raw_mode()?;
 	queue!(stdout, cursor::Show, terminal::Clear(terminal::ClearType::All), terminal::LeaveAlternateScreen)?;
 	stdout.flush()?;
